@@ -26,15 +26,22 @@ hospital_count.columns = ['동', '병원개수']
 
 # 데이터 병합
 merged_data = pd.merge(hospital_count, population_data, on='동', how='outer')
+#총 인구수 결측치 제거(인구수 0이 아닌 결측치)
+merged_data = merged_data.dropna(subset=['2023년11월_계_총인구수'])
+#1,000단위 쉼표 제거
+merged_data['2023년11월_계_총인구수'] = merged_data['2023년11월_계_총인구수'].str.replace(',', '').astype('int64')
+
+
+#병원개수 및 총인구수 기준 하위 30개
+merged_cut_data = merged_data.nsmallest(30, columns=['병원개수', '2023년11월_계_총인구수'])
 
 # 시각화
 plt.figure(figsize=(12, 6))
 
-# 병원 개수와 노인 총 인구수의 관계 시각화
-sns.scatterplot(x='병원개수', y='2023년11월_계_총인구수', data=merged_data, hue='동', palette='viridis', s=100)
-plt.title('병원 개수와 노인 총 인구수의 관계')
+# 노인 총 인구수 대비 병원개수 적은 동 찾기
+sns.scatterplot(x='병원개수', y='2023년11월_계_총인구수', data=merged_cut_data, hue='동', palette='hsv', s=100, alpha = 0.4)
+plt.title('노인 총 인구수 대비 병원 개수 적은 동')
 plt.xlabel('병원 개수')
-plt.ylabel('2023년11월_계_총인구수')
+plt.ylabel('노인 인구')
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-
 plt.show()
